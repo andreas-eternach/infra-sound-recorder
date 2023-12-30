@@ -15,6 +15,13 @@
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <signal.h>
+
+static volatile int keepRunning = 1;
+
+void intHandler(int dummy) {
+    keepRunning = 0;
+}
 
 #ifndef	TRUE
 #  define	TRUE	(1==1)
@@ -162,17 +169,20 @@ void measureLoop(int handle) {
         (unsigned long long)(tv.tv_sec) * 1000 +
         (unsigned long long)(tv.tv_usec) / 1000;
  
-  while (1) {
+  while (keepRunning) {
     printf("%f;%llu\n", measure(handle), millisecondsSinceEpochLast);
     gettimeofday(&tv, NULL);
     unsigned long long millisecondsSinceEpoch =
         (unsigned long long)(tv.tv_sec) * 1000 +
         (unsigned long long)(tv.tv_usec) / 1000;
-    //printf("%llu\n", millisecondsSinceEpoch);
-    if (millisecondsSinceEpoch - millisecondsSinceEpochLast < 10) {
-      usleep(millisecondsSinceEpoch - millisecondsSinceEpochLast);
-    } 
-    millisecondsSinceEpochLast = millisecondsSinceEpoch;
+    // printf("%llu\n", millisecondsSinceEpoch);
+    long diff = millisecondsSinceEpoch - millisecondsSinceEpochLast;
+    if (diff < 10) {
+     usleep((10 - diff)*1000);
+     millisecondsSinceEpochLast = millisecondsSinceEpoch + 10 - diff; 
+    }  else {
+      millisecondsSinceEpochLast = millisecondsSinceEpoch;
+    }
   }
 }
 
@@ -220,6 +230,7 @@ int wiringPiI2CSetup (const int devId)
 }
 
 int main(void) {
+signal(SIGINT, intHandler);
   char buffer[32]; 
   int handle = wiringPiI2CSetup(0x40) ;
   wiringPiI2CWrite(handle, 0xFE);
@@ -227,45 +238,25 @@ int main(void) {
   setResolution(handle, 12);
   sleep(1);
     wiringPiI2CWrite(handle, 0xe5);
-    sprintf(buffer, "--------\n");
+    sprintf(buffer, "#--------\n");
     write(1, buffer, strlen(buffer));
     union i2c_smbus_data data;
 
-/*
-    int32_t val = i2c_smbus_read_word_data(handle, 0xe5);
-    if(val<0) {
-      snprintf(buffer, sizeof(buffer), "Error read_word\n");
-    } else {
-      snprintf(buffer, sizeof(buffer), "%d\n", val & 0xFFFF);
-    }
-    write(1, buffer, strlen(buffer));
-*/    
     unsigned char dataArray[] = {0,0,0,0,0,0,0,0,0,0,0,0}; 
     int32_t val1 = i2c_smbus_read_i2c_block_data(handle, 0xe5, 3, &dataArray[0]);
     if(val1 < 0) {
       snprintf(buffer, sizeof(buffer), "Error read_block_data %d\n", val1);
     } else {
       uint8_t _crc = 0;// Initialize CRC calculation
-      printf("-------------\n");
-      printf("MSB: %d\n", dataArray[0]);
-      printf("LSB: %d\n", dataArray[1]);
-      printf("CRC-IN: %d\n", dataArray[2]);
-      printf("-------------\n");
+      printf("#-------------\n");
+      printf("#MSB: %d\n", dataArray[0]);
+      printf("#LSB: %d\n", dataArray[1]);
+      printf("#CRC-IN: %d\n", dataArray[2]);
+      printf("#-------------\n");
       calcCRC(dataArray[0], &_crc);
       calcCRC(dataArray[1], &_crc);
-      printf("CRC:%d\n------------------------\n", _crc);
+      printf("#CRC:%d\n------------------------\n", _crc);
     }
   measureLoop(handle);
-  /*while (1) { 
-    printf("%f\n", measure(handle)); 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-      unsigned long long millisecondsSinceEpoch =
-      (unsigned long long)(tv.tv_sec) * 1000 +
-      (unsigned long long)(tv.tv_usec) / 1000;
-    printf("%llu\n", millisecondsSinceEpoch);
-    usleep(80);
-  }
-*/
   return 0;
 }
