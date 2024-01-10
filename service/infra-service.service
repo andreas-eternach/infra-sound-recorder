@@ -1,11 +1,13 @@
 [Unit]
-Description=My test service
+Description=infraservice
 After=multi-user.target
 
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/python3 /home/pi/i2c/intra-servicetest.py
+ExecStart=/usr/bin/python3 /home/pi/i2c/service/infra-service.py
+User=pi
+Group=pi
 
 [Install]
 WantedBy=multi-user.target
