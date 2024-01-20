@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdarg.h> 
 #include <stdlib.h>
-// #include <wiringPiI2C.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -108,7 +107,7 @@ void setResolution(int handle, uint8_t res){
 	if(res<9 || res>16) res=12;
 	res-=9;
 	msb|=(res<<1); // set bits 2-4 for selected resolution
- printf("new MSB Resolution: %d\n", msb);
+ printf("#new MSB Resolution: %d\n", msb);
   i2c_smbus_write_word_data(handle, 0xE4, (lsb <<8) | msb);
   _scaleFactor = 14;
 }
@@ -225,7 +224,7 @@ int wiringPiI2CSetupInterface (const char *device, int devId)
 
 int wiringPiI2CSetup (const int devId)
 {
-  const char* device = "/dev/i2c-21" ;
+  const char* device = "/dev/i2c-1" ;
 
   return wiringPiI2CSetupInterface (device, devId) ;
 }
@@ -256,7 +255,7 @@ signal(SIGINT, intHandler);
       printf("#-------------\n");
       calcCRC(dataArray[0], &_crc);
       calcCRC(dataArray[1], &_crc);
-      printf("#CRC:%d\n------------------------\n", _crc);
+      printf("#CRC:%d\n#------------------------\n", _crc);
     }
   measureLoop(handle);
   return 0;
