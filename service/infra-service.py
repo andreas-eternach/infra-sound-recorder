@@ -7,6 +7,10 @@ from datetime import datetime
 
 keepRunning = True
 
+binFolder = "./service/"
+dataFolder = "./data/"
+imageFolder = "./images/"
+
 def signal_handler(sig, frame):
     global keepRunning
     keepRunning = False
@@ -17,22 +21,79 @@ def signal_handler(sig, frame):
     logfile.close()
     exit(0)
 
+def getHourFromString(timeStampAsString):
+  millies = int(timeStampAsString)
+  return int(millies / 1000 / 60 / 60)
+
+def getSecondCsvPart(csvLine):
+  return csvLine.split(";")[1]
+
+def getFileNameForTimeStamp(dt_object):
+  return (dataFolder + format(dt_object.year, '04d') + 
+    format(dt_object.month, '02d') + 
+    format(dt_object.day, '02d') + 
+    "-" + 
+    format(dt_object.hour, '02d') + 
+    format(dt_object.minute, '02d') + 
+    ".csv")
+  
+def triggerImageGeneration(logFileName):
+  print("Not yet implemented")
+
+def writeLockFile(logFileName):
+  lockfile = open(dataFolder + "lock", "w", 1)
+  lockfile.write(logFileName)
+  lockfile.close()
+
+def writeNextBufferToLogFile(buffer):
+  global logfile
+  global startHour
+  global logFileName
+  # open file upon start
+  if logfile == None:
+    startMillies = getSecondCsvPart(buffer[0])
+    startHour = getHourFromString(startMillies)
+    dt_object = datetime.fromtimestamp(int(startMillies) / 1000)
+    logFileName = getFileNameForTimeStamp(dt_object)
+    print("New log file name" + logFileName)
+    logfile = open(logFileName, "w", 1)
+  # roll file if necessary
+  endMillies = getSecondCsvPart(buffer[99])
+  endHour =  getHourFromString(endMillies)
+  if endHour > startHour:
+    logfile.close()
+    triggerImageGeneration(logFileName)
+    dt_object = datetime.fromtimestamp(int(endMillies) / 1000)
+    logFileName = getFileNameForTimeStamp(dt_object)
+    print("New log file name" + logFileName)
+    logfile = open(logFileName, "w", 1)
+    writeLockFile(logFileName)
+    startHour = endHour
+  # write data
+  logfile.write("\n".join(buffer))
+  logfile.write("\n")
+
 signal.signal(signal.SIGINT, signal_handler)
-while keepRunning:
-    dt_object = datetime.now()
-    global logfile
-    logfile = open("/home/pi/i2c/" + 
-      format(dt_object.year, '04d') + 
-      format(dt_object.month, '02d') + 
-      format(dt_object.day, '02d') + 
-      "-" + 
-      format(dt_object.hour, '02d') + 
-      format(dt_object.minute, '02d') + 
-      ".csv", "w", 1)
-    global process
-    process = subprocess.Popen(["/usr/bin/python3", "/home/pi/i2c/service/test.py"], stdin = None, stdout = logfile)
-    time.sleep(60 * 60 * 6)
-    if (keepRunning):
-      process.send_signal(signal.SIGINT)
-      time.sleep(1)
-      logfile.close()
+# global process
+logfile = None
+process = subprocess.Popen(["/usr/bin/python3", binFolder + "test.py"], stdin = None, stdout = subprocess.PIPE)
+pipe = process.stdout
+buffer = [''] * 100
+buffer_row = 0
+while True:
+  # handle signals
+  if keepRunning == False:
+    break
+  buffer[buffer_row] = pipe.readline().decode().rstrip()
+  # handle error
+  if not buffer[buffer_row]:
+    print("invalid result from process" + buffer[buffer_row])
+    break
+  buffer_row=buffer_row + 1
+  if buffer_row == 100:
+    # do write to logfile or roll logfile
+    writeNextBufferToLogFile(buffer)
+    buffer_row = 0
+    
+logfile.close()
+process.send_signal(signal.SIGINT)
