@@ -8,6 +8,9 @@ Restart=always
 ExecStart=/usr/bin/python3 /home/pi/i2c/service/infra-service.py
 User=pi
 Group=pi
+CPUSchedulingPolicy=fifo
+CPUSchedulingPriority=80
+CPUSchedulingResetOnFork=false
 
 [Install]
 WantedBy=multi-user.target

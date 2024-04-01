@@ -38,6 +38,8 @@ def getFileNameForTimeStamp(dt_object):
     ".csv")
   
 def triggerImageGeneration(logFileName):
+  process = subprocess.Popen(["/usr/bin/python3", binFolder + "create-images25-geophon.py", logFileName], 
+    creationflags=subprocess.BELOW_NORMAL_PRIORITY_CLASS, stdin = None, stdout = None)
   print("Not yet implemented")
 
 def writeLockFile(logFileName):
