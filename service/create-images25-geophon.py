@@ -1,3 +1,4 @@
+import sys
 import gzip
 import shutil
 import numpy as np
@@ -6,7 +7,6 @@ import os
 import math
 from matplotlib.figure import Figure
 import matplotlib
-import iso266bands
 
 class Stft(object):
     """Computes the short time fourier transform of a signal
@@ -29,18 +29,6 @@ class Stft(object):
         self.pad_end_size = self.fft_size
         self.total_segments = np.int32(np.ceil(len(self.data) / np.float32(self.hop_size)))
         self.t_max = len(self.data) / np.float32(self.fs)
-
-    def getMaxThird16Value(self, result, ):
-        # iterate time slots
-        max = 0.0
-        bands = iso266bands.iso266bands()
-        minslot = math.floor(bands.getBandLowFrequencyForThirdOctaveBand(12) * 1250 / 25)
-        maxslot = math.floor(bands.getBandHighFrequencyForThirdOctaveBand(12) * 1250 / 25)
-        for x in result:
-            current = np.sum(x[minslot: maxslot])
-            if (current > max):
-                max = current
-        print("Maximum in band 12 : " + str(max))
 
     # 0 db = 0.00002 Pa 0.02, 1
     def stft(self, scale='log', ref= 0.02, clip=None):
@@ -66,7 +54,6 @@ class Stft(object):
             result[i, :] = autopower[: self.fft_size]
             result[i] = np.multiply(np.divide(result[i], 1.2), 0.707)
 
-        self.getMaxThird16Value(result)
         print("Maximum in first sample: " + str(np.max(result[0])))
         # if scale == 'log':
         #    result = self.dB(result, ref)
@@ -134,11 +121,11 @@ def createDbImage(data_values_buffer, y_caption):
     fig.tight_layout()
     return fig
 
-def writeDbImageForHour(hour, count, data_values_buffer, date_values_buffer):
+def writeDbImageForHour(hour, count, data_values_buffer, date_values_buffer, targetFolder):
     datetime_obj=datetime.datetime.fromtimestamp(date_values_buffer[0] / 1000)
     datetime_obj_to=datetime.datetime.fromtimestamp(date_values_buffer[count - 1] / 1000)
  
-    dirname = str(datetime_obj.strftime('%Y%m%d'))
+    dirname = targetFolder + str(datetime_obj.strftime('%Y%m%d'))
     if (not os.path.isdir(dirname)):
         os.mkdir(dirname)
 
@@ -149,7 +136,7 @@ def writeDbImageForHour(hour, count, data_values_buffer, date_values_buffer):
     print(day + "_" + time + ".jpg")
     fig.savefig(dirname + "/" + "geophon_" + day + "_" + time + ".jpg", dpi=250)
  
-def handleFileInternal(f_in):
+def handleFileInternal(f_in, targetFolder):
     values = np.arange(0, int(3600 * 1.28 * 110), dtype=float)
     date_values = np.arange(0, int(3600 * 1.28 * 110), dtype=np.uint64)
     count = 0
@@ -189,26 +176,24 @@ def handleFileInternal(f_in):
     
     # handle remaining stuff
     if (count > 1000):
-        writeDbImageForHour(hour, count, values, date_values)
+        writeDbImageForHour(hour, count, values, date_values, targetFolder)
 
-def handleFile(fileName):
+def handleFile(fileName, targetFolder):
     with open(fileName, 'rb') as f_in:
-        handleFileInternal(f_in)
+        handleFileInternal(f_in, targetFolder)
 
-def handleGzFile(fileName):
+def handleGzFile(fileName, targetFolder):
     with gzip.open(fileName, 'rb') as f_in:
-        handleFileInternal(f_in)
+        handleFileInternal(f_in, targetFolder)
 
-
+os.nice(19)
 matplotlib.rcParams.update({'font.size': 5})
-
 #for file in os.listdir("/home/andreas/i2c/raspberry/i2c/data/"):
-for file in ["/home/andreas/i2c/raspberry/i2c/data/geophon_data.csv"]:
+targetFolder = sys.argv[2]
+for file in [sys.argv[1]]:
 # for file in ["/home/andreas/i2c/raspberry/i2c/data/test/data.csv.gz"]:
     if (file.endswith(".csv.gz")):
         handleGzFile(file)
     elif (file.endswith(".csv")):
-        handleFile(file)
-    elif (file.endswith(".txt1")):
-        handleFile(file)
+        handleFile(file, targetFolder)
 
