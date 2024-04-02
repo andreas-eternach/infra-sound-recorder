@@ -162,11 +162,11 @@ def handleFileInternal(f_in, targetFolder):
             hour = int(math.floor(next_date_value / 1000 / 3600))
         # in case we reached the next hour
         if (count == int(3600 * 1.28 * 110)):
-            writeDbImageForHour(hour, count, values, date_values)
+            writeDbImageForHour(hour, count, values, date_values, targetFolder)
             hour = int(math.floor(next_date_value / 1000 / 3600))
             count = 0
         if (hour < int(math.floor(next_date_value / 1000 / 3600))):
-            writeDbImageForHour(hour, count, values, date_values)
+            writeDbImageForHour(hour, count, values, date_values, targetFolder)
             hour = int(math.floor(next_date_value / 1000 / 3600))
             count = 0
         values[count] = next_value
