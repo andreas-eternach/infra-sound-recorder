@@ -38,7 +38,7 @@ def getFileNameForTimeStamp(dt_object):
     ".csv")
   
 def triggerImageGeneration(logFileName):
-  process = subprocess.Popen(["/usr/bin/python3", binFolder + "create-images25-geophon.py", logFileName, imageFolder], 
+  process = subprocess.Popen(["/usr/bin/python3", binFolder + "create-images-geophon.py", logFileName, imageFolder], 
     stdin = None, stdout = None)
 
 def writeLockFile(logFileName):
@@ -58,6 +58,8 @@ def writeNextBufferToLogFile(buffer):
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logfile = open(logFileName, "w", 1)
+    # only write relative path so that its accessable by the webservice as well
+    writeLockFile(logFileName.replace(dataFolder, ""))
   # roll file if necessary
   endMillies = getSecondCsvPart(buffer[99])
   endHour =  getHourFromString(endMillies)
@@ -68,7 +70,8 @@ def writeNextBufferToLogFile(buffer):
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logfile = open(logFileName, "w", 1)
-    writeLockFile(logFileName)
+    # only write relative path so that its accessable by the webservice as well
+    writeLockFile(logFileName.replace(dataFolder, ""))
     startHour = endHour
   # write data
   logfile.write("\n".join(buffer))

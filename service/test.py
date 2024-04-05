@@ -9,7 +9,8 @@ def signal_handler(sig, frame):
     keepRunning = False
 
 signal.signal(signal.SIGINT, signal_handler)
+sleepTime = 1/128
 while keepRunning == True:
-  time.sleep(0.01)
+  time.sleep(sleepTime)
   print("0;" + str(int(time.time() * 1000)))
 

@@ -1,1 +1,3 @@
 data/lock
+data/*.csv
+images/*.jpg

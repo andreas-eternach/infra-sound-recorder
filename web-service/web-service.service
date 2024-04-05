@@ -7,6 +7,11 @@ Type=simple
 WorkingDirectory=/tmp/letsencrypt
 ExecStart=/usr/bin/python -m web-service/InfraWebServer 8080 &
 ExecStop=/bin/kill `/bin/ps aux | /bin/grep SimpleHTTPServer | /bin/grep -v grep | /usr/bin/awk '{ print $2 }'`
+CPUSchedulingPolicy=idle
+# not sure if this is consistent
+# check https://unix.stackexchange.com/questions/340283/using-and-understanding-systemd-scheduling-related-options-in-a-desktop-context 
+CPUSchedulingPriority=1
+CPUSchedulingResetOnFork=false
 
 [Install]
 WantedBy=multi-user.target
