@@ -2,6 +2,7 @@ import time
 import signal
 import subprocess
 import time
+import os
 from datetime import datetime
 from datetime import datetime
 
@@ -29,10 +30,11 @@ def getSecondCsvPart(csvLine):
   return csvLine.split(";")[1]
 
 def getFileNameForTimeStamp(dt_object):
+  # TODO: Create children folder for each day
   return (dataFolder + format(dt_object.year, '04d') + 
     format(dt_object.month, '02d') + 
     format(dt_object.day, '02d') + 
-    "-" + 
+    "/" + 
     format(dt_object.hour, '02d') + 
     format(dt_object.minute, '02d') + 
     ".csv")
@@ -57,6 +59,9 @@ def writeNextBufferToLogFile(buffer):
     dt_object = datetime.fromtimestamp(int(startMillies) / 1000)
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
+    logSubDirName = os.path.dirname(logFileName)
+    if (not os.path.isdir(logSubDirName)):
+        os.mkdir(logSubDirName)
     logfile = open(logFileName, "w", 1)
     # only write relative path so that its accessable by the webservice as well
     writeLockFile(logFileName.replace(dataFolder, ""))
@@ -69,6 +74,9 @@ def writeNextBufferToLogFile(buffer):
     dt_object = datetime.fromtimestamp(int(endMillies) / 1000)
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
+    logSubDirName = os.path.dirname(logFileName)
+    if (not os.path.isdir(logSubDirName)):
+        os.mkdir(logSubDirName)
     logfile = open(logFileName, "w", 1)
     # only write relative path so that its accessable by the webservice as well
     writeLockFile(logFileName.replace(dataFolder, ""))
