@@ -5,6 +5,7 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
+WorkingDirectory=/home/pi/geophon/infra-sound-recorder/service
 ExecStart=/usr/bin/python3 /home/pi/i2c/service/infra-service.py
 User=pi
 Group=pi

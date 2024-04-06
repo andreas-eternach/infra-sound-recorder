@@ -7,9 +7,9 @@ from datetime import datetime
 
 keepRunning = True
 
-binFolder = "./service/"
-dataFolder = "./data/"
-imageFolder = "./images/"
+binFolder = "./"
+dataFolder = "../data/"
+imageFolder = "../images/"
 
 def signal_handler(sig, frame):
     global keepRunning
@@ -80,7 +80,7 @@ def writeNextBufferToLogFile(buffer):
 signal.signal(signal.SIGINT, signal_handler)
 # global process
 logfile = None
-process = subprocess.Popen(["/usr/bin/python3", binFolder + "test.py"], stdin = None, stdout = subprocess.PIPE)
+process = subprocess.Popen(["/usr/bin/python3", binFolder + "geophon-continous.py"], stdin = None, stdout = subprocess.PIPE)
 pipe = process.stdout
 buffer = [''] * 100
 buffer_row = 0

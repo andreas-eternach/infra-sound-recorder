@@ -4,8 +4,8 @@ Documentation=man:SimpleHTTPServer(1)
 
 [Service]
 Type=simple
-WorkingDirectory=/tmp/letsencrypt
-ExecStart=/usr/bin/python -m web-service/InfraWebServer 8080 &
+WorkingDirectory=/home/pi/geophon/infra-sound-recorder/web-service
+ExecStart=/usr/bin/python3 -m InfraWebServer 8080 &
 ExecStop=/bin/kill `/bin/ps aux | /bin/grep SimpleHTTPServer | /bin/grep -v grep | /usr/bin/awk '{ print $2 }'`
 CPUSchedulingPolicy=idle
 # not sure if this is consistent
