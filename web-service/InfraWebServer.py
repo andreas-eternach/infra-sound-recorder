@@ -8,7 +8,7 @@ from urllib.parse import parse_qs
 import numpy as np
 
 hostName = "0.0.0.0"
-serverPort = 8080
+serverPort = 8081
 imageFolder = "../images/"
 dataFolder = "../data/"
 
