@@ -32,10 +32,11 @@ sudo systemctl daemon-reload
 sudo systemctl enable infra-service
 sudo systemctl start infra-service
 ```
-# Install web-service for the geophon
 
-## Install requirements
-```
+= Install web-service for the geophon
+
+== Install requirements
+sudo apt-get install libopenblas-dev
 python3 -m pip numpy matplotlib httpserver
 ```
 == Copy service file to systemd folder
@@ -46,3 +47,9 @@ sudo systemctl daemon-reload
 sudo systemctl enable web-service
 sudo systemctl start web-service
 ```
+# Credits
+
+## Geophon
+
+* https://core-electronics.com.au/guides/geophone-raspberry-pi/
+* https://www.bayceer.uni-bayreuth.de/infraschall/

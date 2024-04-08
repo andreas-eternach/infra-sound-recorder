@@ -52,7 +52,8 @@ class Stft(object):
             autopower = np.abs(np.divide(spectrum, self.win_size / 4))
             
             result[i, :] = autopower[: self.fft_size]
-            result[i] = np.multiply(np.divide(result[i], 1.2), 0.707)
+            # sensorScale = 1.2
+            # result[i] = np.divide(result[i], sensorScale)
 
         print("Maximum in first sample: " + str(np.max(result[0])))
         # if scale == 'log':
@@ -66,7 +67,8 @@ class Stft(object):
 
     def dB(self, data, ref):
         """Return the dB equivelant of the input data"""
-        return 20*np.log10(data / ref)
+        effectiveAmplitude = 0.707
+        return 20*np.log10(data * effectiveAmplitude / ref)
 
     def freq_axis(self):
         """Returns a list of frequencies which correspond to the bins in the returned data from stft()"""

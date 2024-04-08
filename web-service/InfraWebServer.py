@@ -101,7 +101,7 @@ class InfraWebServer(BaseHTTPRequestHandler):
         fig = ft.createFrequencyImage()
         #buf = io.BytesIO()
         #fig.savefig(buf, format='png')
-        fig.savefig(self.wfile, format='png')
+        fig.savefig(self.wfile, format='jpg', dpi=250)
 
        
     def doListFolderStructure(self):
@@ -115,7 +115,7 @@ class InfraWebServer(BaseHTTPRequestHandler):
         files.sort()
         for file in files:
           if os.path.isdir(imageFolder + path + "/" + file):
-            self.wfile.write(bytes("<a href=\"/" + self.path + "/" + file + "\">" + file + "</a><br>", "utf-8"))
+            self.wfile.write(bytes("<a href=\"" + self.path + file + "\">" + file + "</a><br>", "utf-8"))
           else:
             self.wfile.write(bytes("<a href=\"/data" + self.path + "/" + file + "\">" + file + "</a><br>", "utf-8"))
         self.wfile.write(bytes("""<hr/>
@@ -123,6 +123,9 @@ class InfraWebServer(BaseHTTPRequestHandler):
                                <label for="windowSize">Window Size</label><br>
                                <select name="windowSize">
                                <option value="2500" selected>2500</option>
+                               <option value="2000" selected>2500</option>
+                               <option value="1500" selected>2500</option>
+                               <option value="1000" selected>2500</option>
                                </select>
                                <br>
                                <label for="overlapFactor">Overlap Factor</label><br>
