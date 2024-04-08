@@ -49,7 +49,7 @@ def writeLockFile(logFileName):
   lockfile.write(logFileName)
   lockfile.close()
 
-def writeNextBufferToLogFile(buffer):
+def writeNextBufferToLogFile(buffer, bufferRowCount, isFinalBuffer):
   global logfile
   global startHour
   global logFileName
@@ -70,9 +70,9 @@ def writeNextBufferToLogFile(buffer):
   logfile.write("\n".join(buffer))
   logfile.write("\n")
   # roll file if necessary
-  endMillies = getSecondCsvPart(buffer[99])
+  endMillies = getSecondCsvPart(buffer[bufferRowCount])
   endHour =  getHourFromString(endMillies)
-  if endHour > startHour:
+  if endHour > startHour or isFinalBuffer:
     logfile.close()
     triggerImageGeneration(logFileName)
     dt_object = datetime.fromtimestamp(int(endMillies) / 1000)
@@ -96,6 +96,7 @@ buffer_row = 0
 while True:
   # handle signals
   if keepRunning == False:
+    writeNextBufferToLogFile(buffer, buffer_row, True)
     break
   buffer[buffer_row] = pipe.readline().decode().rstrip()
   # handle error
@@ -105,7 +106,7 @@ while True:
   buffer_row=buffer_row + 1
   if buffer_row == 100:
     # do write to logfile or roll logfile
-    writeNextBufferToLogFile(buffer)
+    writeNextBufferToLogFile(buffer, buffer_row - 1, False)
     buffer_row = 0
     
 logfile.close()

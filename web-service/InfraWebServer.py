@@ -42,7 +42,6 @@ class InfraWebServer(BaseHTTPRequestHandler):
             next_date_value = float(values[1])
             return next_date_value / 1000 
           
-
     def readDataFromLogFile(self, logFileName, offsetInSeconds, numberInSeconds, frequency):
        desiredSampleNumber = frequency * numberInSeconds
        data = np.empty((2, desiredSampleNumber), np.float64)
