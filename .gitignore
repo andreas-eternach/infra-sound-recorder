@@ -1,4 +1,4 @@
-data/lock
-data/*.csv
+data/**/lock
+data/**/*.csv
 images/**/*.jpg
 **/__pycache__/**
