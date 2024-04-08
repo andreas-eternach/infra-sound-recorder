@@ -57,7 +57,7 @@ def writeNextBufferToLogFile(buffer):
   if logfile == None:
     startMillies = getSecondCsvPart(buffer[0])
     startHour = getHourFromString(startMillies)
-    dt_object = datetime.fromtimestamp(math.ceil(int(startMillies) / 1000))
+    dt_object = datetime.fromtimestamp(int(startMillies) / 1000)
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logSubDirName = os.path.dirname(logFileName)
@@ -66,13 +66,16 @@ def writeNextBufferToLogFile(buffer):
     logfile = open(logFileName, "w", 1)
     # only write relative path so that its accessable by the webservice as well
     writeLockFile(logFileName.replace(dataFolder, ""))
+  # write data
+  logfile.write("\n".join(buffer))
+  logfile.write("\n")
   # roll file if necessary
   endMillies = getSecondCsvPart(buffer[99])
   endHour =  getHourFromString(endMillies)
   if endHour > startHour:
     logfile.close()
     triggerImageGeneration(logFileName)
-    dt_object = datetime.fromtimestamp(int(endMillies) / 1000)
+    dt_object = datetime.fromtimestamp(endMillies / 1000)
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logSubDirName = os.path.dirname(logFileName)
@@ -82,9 +85,6 @@ def writeNextBufferToLogFile(buffer):
     # only write relative path so that its accessable by the webservice as well
     writeLockFile(logFileName.replace(dataFolder, ""))
     startHour = endHour
-  # write data
-  logfile.write("\n".join(buffer))
-  logfile.write("\n")
 
 signal.signal(signal.SIGINT, signal_handler)
 # global process
