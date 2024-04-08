@@ -75,7 +75,7 @@ def writeNextBufferToLogFile(buffer):
   if endHour > startHour:
     logfile.close()
     triggerImageGeneration(logFileName)
-    dt_object = datetime.fromtimestamp(endMillies / 1000)
+    dt_object = datetime.fromtimestamp(int(endMillies) / 1000)
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logSubDirName = os.path.dirname(logFileName)
