@@ -3,6 +3,7 @@ import signal
 import subprocess
 import time
 import os
+import math
 from datetime import datetime
 from datetime import datetime
 
@@ -56,7 +57,7 @@ def writeNextBufferToLogFile(buffer):
   if logfile == None:
     startMillies = getSecondCsvPart(buffer[0])
     startHour = getHourFromString(startMillies)
-    dt_object = datetime.fromtimestamp(int(startMillies) / 1000)
+    dt_object = datetime.fromtimestamp(math.ceil(int(startMillies) / 1000))
     logFileName = getFileNameForTimeStamp(dt_object)
     print("New log file name" + logFileName)
     logSubDirName = os.path.dirname(logFileName)
