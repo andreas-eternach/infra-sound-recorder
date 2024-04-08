@@ -3,12 +3,13 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import time
 import os
 import io
+import sys
 import FrequencyImageGenerator
 from urllib.parse import parse_qs 
 import numpy as np
 
 hostName = "0.0.0.0"
-serverPort = 8081
+serverPort = 8080
 imageFolder = "../images/"
 dataFolder = "../data/"
 
@@ -165,7 +166,8 @@ class InfraWebServer(BaseHTTPRequestHandler):
           self.wfile.write(bytes("<p>Not found." + self.path + "</p>", "utf-8"))
           self.wfile.write(bytes("</body></html>", "utf-8"))
 
-if __name__ == "__main__":        
+if __name__ == "__main__":
+    serverPort = int(sys.argv[1])        
     webServer = HTTPServer((hostName, serverPort), InfraWebServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
 
