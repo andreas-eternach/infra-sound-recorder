@@ -23,8 +23,6 @@ class InfraWebServer(BaseHTTPRequestHandler):
           file.seek(position)
           file.readline()
           pageSecond = self.readNextSecondFromFile(file)
-          print(pageSecond)
-          print(desiredStartSecond)
           if pageSecond > desiredStartSecond:
             file.seek(position - pageSize)
             pageSecond = self.readNextSecondFromFile(file)
@@ -113,7 +111,9 @@ class InfraWebServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("<html><head><title>Geophon Data</title></head>", "utf-8"))
         self.wfile.write(bytes("<body>", "utf-8"))
         path = self.path.replace("/images/", "")
-        for file in os.listdir(imageFolder + path):
+        files = os.listdir(imageFolder + path)
+        files.sort()
+        for file in files:
           if os.path.isdir(imageFolder + path + "/" + file):
             self.wfile.write(bytes("<a href=\"/" + self.path + "/" + file + "\">" + file + "</a><br>", "utf-8"))
           else:
