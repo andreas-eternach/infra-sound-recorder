@@ -142,6 +142,11 @@ class InfraWebServer(BaseHTTPRequestHandler):
                                """, "utf-8"))
         self.wfile.write(bytes("</body></html>", "utf-8"))
 
+    def redirectToImages(self):
+      self.send_response(302)
+      self.send_header('Location', '/images/')
+      self.end_headers() 
+     
     def doDownloadFile(self):
       self.send_response(200)
       self.send_header('Content-type', 'image/jpg')
@@ -150,7 +155,9 @@ class InfraWebServer(BaseHTTPRequestHandler):
         self.wfile.write(f.read())
 
     def do_GET(self):
-        if self.path == '/' or self.path.startswith("/images/"):
+        if self.path == '/':
+          self.redirectToImages()
+        if self.path.startswith("/images/"):
           self.doListFolderStructure()
         elif self.path.startswith("/data/images/"):
           self.doDownloadFile()

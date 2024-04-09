@@ -31,7 +31,6 @@ def getSecondCsvPart(csvLine):
   return csvLine.split(";")[1]
 
 def getFileNameForTimeStamp(dt_object):
-  # TODO: Create children folder for each day
   return (dataFolder + format(dt_object.year, '04d') + 
     format(dt_object.month, '02d') + 
     format(dt_object.day, '02d') + 
