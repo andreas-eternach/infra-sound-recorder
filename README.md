@@ -59,7 +59,7 @@ cd sensor-control
 autoconf
 autoreconf --install
 ```
-# Install recording-service for the geophon
+# Install recording-service
 
 This is the recording-service, responsible for communicating with te device and recording the data.
 
@@ -67,13 +67,22 @@ This is the recording-service, responsible for communicating with te device and 
 ```
 python3 -m pip numpy matplotlib
 ```
-## Copy service file to systemd folder
+## Geophon : Copy service file to systemd folder
 ```
 cd geophon/infra-sound-recoder/service
 sudo cp infra-service.service /etc/systemd/system
 sudo systemctl daemon-reload
 sudo systemctl enable infra-service
 sudo systemctl start infra-service
+```
+
+## Pressure-Sensor : Copy service file to systemd folder
+```
+cd geophon/infra-sound-recoder/service
+sudo cp infrasound-recording-service.service /etc/systemd/system
+sudo systemctl daemon-reload
+sudo systemctl enable infrasound-recording-service
+sudo systemctl start infrasound-recording-service
 ```
 
 # Install web-service for the geophon
