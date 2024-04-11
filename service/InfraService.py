@@ -22,6 +22,7 @@ from enum import Enum
 class SubProcessType(str, Enum):
   INFRASOUND = 'infrasound'
   TEST = 'test'
+  TESTHALFS = 'testhalfs'
   GEOPHON = 'geophon'
 
 class InfraService(object):
@@ -43,8 +44,11 @@ class InfraService(object):
       ".csv")
   
   def triggerImageGeneration(self, logFileName):
-    subprocess.Popen(["/usr/bin/python3", self.binFolder + "create-images-geophon.py", self.logFileName, self.imageFolder], 
-      stdin = None, stdout = None)
+    for command in self.imageGenerationByType[self.subProcessType]:
+      subProcessCommand = command + [self.logFileName, self.imageFolder]
+      subprocess.Popen(subProcessCommand, stdin = None, stdout = None)
+    #subprocess.Popen(["/usr/bin/python3", self.binFolder + "create-images-geophon.py", self.logFileName, self.imageFolder], 
+    #  stdin = None, stdout = None)
 
   def writeLockFile(self, logFileName):
     lockfile = open(self.dataFolder + "lock", "w", 1)
@@ -104,19 +108,24 @@ class InfraService(object):
     self.imageFolder = "../images/"
     self.subProcessTypes = {
       SubProcessType.GEOPHON: ["/usr/bin/python3", self.binFolder + "geophon-continous.py"],
-      SubProcessType.INFRASOUND: ["/usr/bin/sensorcontrol"],
-      SubProcessType.TEST: ["/usr/bin/python3", self.binFolder + "test.py"]
+      SubProcessType.INFRASOUND: ["/usr/local/bin/sensorcontrol"],
+      SubProcessType.TEST: ["/usr/bin/python3", self.binFolder + "test.py"],
+      SubProcessType.TESTHALFS: ["/usr/bin/python3", self.binFolder + "test.py"]
     }
     self.imageGenerationByType = {
       SubProcessType.GEOPHON: [
-        ["/usr/bin/python3", self.binFolder + "create-images.py", "geophon_", "lin"]
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "geophon_", "lin", "full"]
       ],
       SubProcessType.TEST: [
-        ["/usr/bin/python3", self.binFolder + "create-images.py", "geophon_", "lin"]
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "test_", "lin", "full"]
+      ],
+      SubProcessType.TESTHALFS: [
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "test25_", "lin", "lowerhalf"],
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "test50_", "log", "upperhalf"]
       ],
       SubProcessType.INFRASOUND: [
-        ["/usr/bin/python3", self.binFolder + "create-images.py", "infra_", "log", "lowerhalf"],
-        ["/usr/bin/python3", self.binFolder + "create-images.py", "infra_", "log", "upperhalf"]
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "infra25_", "log", "lowerhalf"],
+        ["/usr/bin/python3", self.binFolder + "create-image.py", "infra50_", "log", "upperhalf"]
       ]
     }
 

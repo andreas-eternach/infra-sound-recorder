@@ -1,6 +1,5 @@
 import sys
 import gzip
-import shutil
 import numpy as np
 import datetime
 import os
@@ -49,15 +48,17 @@ class Stft(object):
             padded = np.append(windowed, inner_pad)
             spectrum = np.fft.fft(padded)
             # autopower = np.abs(spectrum * np.conj(spectrum))
+            # TODO: Describe why we divide by 4 (2 for the hanning windows energy ?)
             autopower = np.abs(np.divide(spectrum, self.win_size / 4))
             
             result[i, :] = autopower[: self.fft_size]
+            # TODO: Take sensor-specific scaling into account
             # sensorScale = 1.2
             # result[i] = np.divide(result[i], sensorScale)
 
         print("Maximum in first sample: " + str(np.max(result[0])))
-        # if scale == 'log':
-        #    result = self.dB(result, ref)
+        if scale == 'log':
+            result = self.dB(result, ref)
 
         if clip is not None:
             np.clip(result, clip[0], clip[1], out=result)
@@ -73,6 +74,17 @@ class Stft(object):
     def freq_axis(self):
         """Returns a list of frequencies which correspond to the bins in the returned data from stft()"""
         return np.arange(self.fft_size) / np.float32(self.fft_size * 2) * self.fs
+
+
+    def freq_axisLowerHalf(self):
+        """Returns a list of frequencies which correspond to the bins in the returned data from stft()"""
+        lower_half_bin_size = self.fft_size / 2 
+        return np.arange(lower_half_bin_size) / np.float32(lower_half_bin_size * 2) * self.fs / 2
+
+    def freq_axisUpperHalf(self):
+        """Returns a list of frequencies which correspond to the bins in the returned data from stft()"""
+        lower_half_bin_size = self.fft_size / 2 
+        return np.arange(lower_half_bin_size) / np.float32(lower_half_bin_size * 2) * self.fs / 2 + self.fs / 4
 
     def time_axis(self):
         """Returns a list of times which correspond to the bins in the returned data from stft()"""
@@ -101,15 +113,31 @@ def create_ticks_optimum(axis, num_ticks, resolution, return_errors=False):
         return indicies, ideal_vals
 
 def createDbImage(data_values_buffer, y_caption):
+    global scale
+    global frequencyRange
     ft = Stft(data_values_buffer, 128, win_size=2500, fft_size=2500, overlap_fac=0.9)
-    result = ft.stft(clip=(0, 60))
-    x_ticks, x_tick_labels = create_ticks_optimum(ft.freq_axis(), num_ticks=30, resolution=5)
-    y_ticks, y_tick_labels = create_ticks_optimum(ft.time_axis(), num_ticks=10, resolution=1)
+    result = ft.stft(clip=(0, 60), scale=scale)
+
+    freq_axis = None
+    if frequencyRange == "full":
+        freq_axis = ft.freq_axis()
+    elif frequencyRange == "lowerhalf":
+        freq_axis = ft.freq_axisLowerHalf()
+    elif frequencyRange == "upperhalf":
+        freq_axis = ft.freq_axisUpperHalf()
+    x_ticks, x_tick_labels = create_ticks_optimum(freq_axis, num_ticks=30, resolution=5)
+    # TODO show seconds
+    # y_ticks, y_tick_labels = create_ticks_optimum(ft.time_axis(), num_ticks=10, resolution=1)
 
     fig = Figure()
     fig.clear()
     ax = fig.add_subplot(111)
 
+    bucketSize = len(result[0])
+    if frequencyRange == "lowerhalf":
+        result = tuple(elem[:int(bucketSize/2)] for elem in result)
+    elif frequencyRange == "upperhalf":
+        result = tuple(elem[int(bucketSize/2):bucketSize] for elem in result)
     img = ax.imshow(result, origin='lower', cmap='jet', interpolation='none', aspect='auto')
     ax.set_xticks(x_ticks)
     ax.set_xticklabels(x_tick_labels)
@@ -124,6 +152,8 @@ def createDbImage(data_values_buffer, y_caption):
     return fig
 
 def writeDbImageForHour(hour, count, data_values_buffer, date_values_buffer, targetFolder):
+    print("Generating image")
+    global imagePrefix
     datetime_obj=datetime.datetime.fromtimestamp(date_values_buffer[0] / 1000)
     datetime_obj_to=datetime.datetime.fromtimestamp(date_values_buffer[count - 1] / 1000)
  
@@ -136,7 +166,7 @@ def writeDbImageForHour(hour, count, data_values_buffer, date_values_buffer, tar
 
     fig = createDbImage(data_values_buffer[0:count - 1], str(datetime_obj.strftime('%d.%m.%Y %H:%M:%S')) + "(unten)-" + str(datetime_obj_to.strftime('%H:%M:%S') + "(oben)"))
     print(day + "_" + time + ".jpg")
-    fig.savefig(dirname + "/" + "geophon_" + day + "_" + time + ".jpg", dpi=250)
+    fig.savefig(dirname + "/" + imagePrefix + day + "_" + time + ".jpg", dpi=250)
  
 def handleFileInternal(f_in, targetFolder):
     values = np.arange(0, int(3600 * 1.28 * 110), dtype=float)
@@ -178,6 +208,7 @@ def handleFileInternal(f_in, targetFolder):
     
     # handle remaining stuff
     if (count > 1000):
+        print("write remainder")
         writeDbImageForHour(hour, count, values, date_values, targetFolder)
 
 def handleFile(fileName, targetFolder):
@@ -190,11 +221,20 @@ def handleGzFile(fileName, targetFolder):
 
 # be nice and do not block the data logger, only run when sufficient resources are avail
 os.nice(19)
+
+# set a small font size to keep more space for the actual data
 matplotlib.rcParams.update({'font.size': 5})
-#for file in os.listdir("/home/andreas/i2c/raspberry/i2c/data/"):
-targetFolder = sys.argv[2]
-for file in [sys.argv[1]]:
-# for file in ["/home/andreas/i2c/raspberry/i2c/data/test/data.csv.gz"]:
+
+# read command line arguments
+imagePrefix = sys.argv[1]
+scale = sys.argv[2]
+frequencyRange = sys.argv[3]
+logFileName = sys.argv[4]
+targetFolder = sys.argv[5]
+
+print("Logfilename:" + logFileName)
+print("targetfolder:" + targetFolder)
+for file in [logFileName]:
     if (file.endswith(".csv.gz")):
         handleGzFile(file)
     elif (file.endswith(".csv")):
