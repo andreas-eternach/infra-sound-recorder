@@ -59,7 +59,9 @@ cd sensor-control
 autoconf
 autoreconf --install
 ```
-# Install service for the geophon
+# Install recording-service for the geophon
+
+This is the recording-service, responsible for communicating with te device and recording the data.
 
 ## Install requirements
 ```
@@ -74,13 +76,18 @@ sudo systemctl enable infra-service
 sudo systemctl start infra-service
 ```
 
-= Install web-service for the geophon
+# Install web-service for the geophon
 
-== Install requirements
+This is the web-service, responsible for providing the web-interface to access the statistics data.
+
+## Install requirements
+
+```
 sudo apt-get install libopenblas-dev
 python3 -m pip numpy matplotlib httpserver
 ```
-== Copy service file to systemd folder
+## Copy service file to systemd folder
+
 ```
 cd geophon/infra-sound-recoder/web-service
 sudo cp web-service.service /etc/systemd/system
