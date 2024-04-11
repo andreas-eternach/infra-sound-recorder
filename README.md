@@ -2,7 +2,7 @@
 
 This project contains a collection of tools for analyzing infra-sound. It was born when experiencing noise from a distant infra-sound-source.
 
-This project ist is of course inspired by the work of many other people (see credits below).
+This project is inspired by the work of many other people (see credits below).
 
 There is a lot of theory about infra-sound and the involved issues, caused by the sound and the vivbrations. Actually infra-sound is in 
 most cases a surface acoustic wave (https://en.wikipedia.org/wiki/Surface_acoustic_wave). Therefore measuring it requires measurement of
