@@ -53,8 +53,9 @@ class Stft(object):
             
             result[i, :] = autopower[: self.fft_size]
             # TODO: Take sensor-specific scaling into account
-            # sensorScale = 1.2
-            # result[i] = np.divide(result[i], sensorScale)
+            if scale == 'log':
+              sensorScale = 1.2
+              result[i] = np.divide(result[i], sensorScale)
 
         print("Maximum in first sample: " + str(np.max(result[0])))
         if scale == 'log':
@@ -115,7 +116,7 @@ def create_ticks_optimum(axis, num_ticks, resolution, return_errors=False):
 def createDbImage(data_values_buffer, y_caption):
     global scale
     global frequencyRange
-    ft = Stft(data_values_buffer, 128, win_size=2500, fft_size=2500, overlap_fac=0.9)
+    ft = Stft(data_values_buffer, 100, win_size=2500, fft_size=2500, overlap_fac=0.9)
     result = ft.stft(clip=(0, 60), scale=scale)
 
     freq_axis = None

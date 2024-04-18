@@ -148,7 +148,8 @@ class InfraService(object):
       if not self.buffer[self.buffer_row]:
         print("invalid result from process" + self.buffer[self.buffer_row])
         break
-      self.buffer_row = self.buffer_row + 1
+      if not self.buffer[self.buffer_row].startswith('#'):
+        self.buffer_row = self.buffer_row + 1
       if self.buffer_row == 100:
         # do write to logfile or roll logfile
         self.writeNextBufferToLogFile(self.buffer, self.buffer_row - 1, False)
