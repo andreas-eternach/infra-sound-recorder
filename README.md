@@ -27,15 +27,36 @@ Work is still in progress, i hope to extend this project over time, i am current
 
 ## General Setup
 
-You need for each sensor a Rasperry-PI. It makes sense to set up Bluetooth in PAN-Mode, which allows you to connect to the sensor from your mobile phone and check real-time-data.
+You need for each sensor a Rasperry-PI. It makes sense to set up Bluetooth in PAN-Mode, which allows you to connect to the sensor from your mobile phone and check real-time-data. Some hints for bluethooth-connectivity.
+
+## Setting up bluetooth
+
+You also need to setup PAN to be able to access network services like ssh or http from your bluetooth-connected phone.
+
+## Pairing Devices
+use Bluetoothctl
+* scan on
+* discoverable on
+* devices
+* pair
+
+## RTC: Real Time Clock
+
+Especially when running without network connectivity the Raspi looses its time quite fast.
+There are RTC-I2C-Devices avail, which can be connected to the second I2C-Interface of the Raspi.
+
+## Wifi
 
 It also makes sense to setup Wifi, you know better probably.
 
+## Wiring
+
 After setting up the system, just wire up the devices and perform the following installation steps.
 
-## Install GIT-Repo
+## Install Infrasound-Recorder from GIT-Repo
 
 ```
+# not sure it this is required to pull
 sudo apt install gh
 gh auth login
 git clone ...
@@ -47,25 +68,27 @@ git clone ...
 sudo apt install i2c-tools
 ```
 
-## Manual Install
+## Manual Build and Install
 ```
 cc i2c_read_test.c -li2c
 cc i2c_read_test.c -lwiringPi -li2c
 rsync -v --remove-source-files -r -d pi@raspberrypi:/home/pi/i2c/data/ . 
 ```
-## Automatic install
+## Install with autotools
+
 ```
 cd sensor-control
 autoconf
 autoreconf --install
 ```
+
 # Install recording-service
 
 This is the recording-service, responsible for communicating with te device and recording the data.
 
 ## Install requirements
 ```
-python3 -m pip numpy matplotlib
+python3 -m pip install numpy matplotlib
 ```
 ## Geophon : Copy service file to systemd folder
 ```
