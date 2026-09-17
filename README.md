@@ -49,6 +49,12 @@ There are RTC-I2C-Devices avail, which can be connected to the second I2C-Interf
 
 It also makes sense to setup Wifi, you know better probably.
 
+Im using the old chipset rtl8812, which causes some issues, see
+* https://github.com/morrownr/8812au-20210629/issues/22
+* https://www.linuxquestions.org/questions/slackware-14/what-are-the-ways-to-set-driver-parameters-4175594712/
+* use weth for wpa_supplicant
+* lsmod | grep 8812au
+
 ## Wiring
 
 After setting up the system, just wire up the devices and perform the following installation steps.

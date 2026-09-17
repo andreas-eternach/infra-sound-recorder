@@ -1,4 +1,4 @@
-# Backup to Device
+# Backup to Backup-Device
 
 ```
 rsync -v -r pi@raspberrypi:/home/pi/geophon/infra-sound-recorder/data /media/andreas/Volume/geophon/geophon/data
