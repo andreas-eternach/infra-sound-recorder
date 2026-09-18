@@ -100,7 +100,10 @@ This is the recording-service, responsible for communicating with te device and 
 
 ## Install requirements
 ```
-python3 -m pip install numpy matplotlib
+cd geophon/infrasounc-service/service
+ppython -m venv infrasound
+source ./infrasound/bin/activate
+pip install numpy matplotlib httpserve
 ```
 ## Geophon : Copy service file to systemd folder
 ```
@@ -128,7 +131,9 @@ This is the web-service, responsible for providing the web-interface to access t
 
 ```
 sudo apt-get install libopenblas-dev
-python3 -m pip numpy matplotlib httpserver
+cd geophon/infrasounc-service/service
+source ./infrasound/bin/activate
+pip numpy matplotlib httpserver
 ```
 ## Copy service file to systemd folder
 
