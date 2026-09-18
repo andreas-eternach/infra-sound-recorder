@@ -114,18 +114,18 @@ class InfraService(object):
     }
     self.imageGenerationByType = {
       SubProcessType.GEOPHON: [
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "geophon_", "lin", "full"]
+        [sys.executable, self.binFolder + "create-image.py", "geophon_", "lin", "full"]
       ],
       SubProcessType.TEST: [
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "test_", "lin", "full"]
+        [sys.executable, self.binFolder + "create-image.py", "test_", "lin", "full"]
       ],
       SubProcessType.TESTHALFS: [
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "test25_", "lin", "lowerhalf"],
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "test50_", "log", "upperhalf"]
+        [sys.executable, self.binFolder + "create-image.py", "test25_", "lin", "lowerhalf"],
+        [sys.executable, self.binFolder + "create-image.py", "test50_", "log", "upperhalf"]
       ],
       SubProcessType.INFRASOUND: [
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "infra25_", "log", "lowerhalf"],
-        ["/usr/bin/python3", self.binFolder + "create-image.py", "infra50_", "log", "upperhalf"]
+        [sys.executable, self.binFolder + "create-image.py", "infra25_", "log", "lowerhalf"],
+        [sys.executable, self.binFolder + "create-image.py", "infra50_", "log", "upperhalf"]
       ]
     }
 
