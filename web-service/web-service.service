@@ -5,12 +5,12 @@ Documentation=man:SimpleHTTPServer(1)
 [Service]
 Type=simple
 WorkingDirectory=/home/pi/geophon/infra-sound-recorder/web-service
-ExecStart=/usr/bin/python3 -m InfraWebServer 8081 &
-ExecStop=/bin/kill `/bin/ps aux | /bin/grep SimpleHTTPServer | /bin/grep -v grep | /usr/bin/awk '{ print $2 }'`
+ExecStart=/bin/sh -c 'exec ./infrasound/bin/python -m InfraWebServer 8081 '
+ExecStop=/bin/kill `/bin/ps aux | /bin/grep InfraWebServer | /bin/grep -v grep | /usr/bin/awk '{ print $2 }'`
 CPUSchedulingPolicy=idle
 # not sure if this is consistent
 # check https://unix.stackexchange.com/questions/340283/using-and-understanding-systemd-scheduling-related-options-in-a-desktop-context 
-CPUSchedulingPriority=1
+# CPUSchedulingPriority=1
 CPUSchedulingResetOnFork=false
 
 [Install]
