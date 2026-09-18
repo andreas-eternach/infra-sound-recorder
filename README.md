@@ -72,6 +72,10 @@ git clone ...
 
 ```
 sudo apt install i2c-tools
+sudo apt install autoconf
+sudo apt install libi2c_dev
+# i2c anschalten
+sudo raspi-config
 ```
 
 ## Manual Build and Install
@@ -86,6 +90,7 @@ rsync -v --remove-source-files -r -d pi@raspberrypi:/home/pi/i2c/data/ .
 cd sensor-control
 autoconf
 autoreconf --install
+make
 ```
 
 # Install recording-service
