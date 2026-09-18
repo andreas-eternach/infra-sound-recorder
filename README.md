@@ -91,6 +91,7 @@ cd sensor-control
 autoconf
 autoreconf --install
 make
+sudo make install
 ```
 
 # Install recording-service
