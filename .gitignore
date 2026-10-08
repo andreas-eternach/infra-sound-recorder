@@ -8,5 +8,4 @@ images/**/*.jpg
 **/sensorcontrol
 **/*.o
 **/*.Po
-infra-sound-recorder/sensor-control/src/.deps/i2c_read_test.Po
 **/config.log
