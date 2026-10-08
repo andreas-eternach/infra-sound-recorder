@@ -14,11 +14,11 @@ imageFolder = "../images/"
 dataFolder = "../data/"
 
 class InfraWebServer(BaseHTTPRequestHandler):
-    geophonFrequency = 128
+    geophonFrequency = 100
 
-    def gotoPositionWithTime(self, file, fileLength, desiredStartSecond):
+    def gotoPositionWithTime(self, file, fileLength, desiredStartSecond, frequency):
        # jump by approx 2 seconds
-       pageSize = self.geophonFrequency * 16 * 2
+       pageSize = frequency * 16 * 2
        position = pageSize
        while True:
           file.seek(position)
@@ -51,7 +51,7 @@ class InfraWebServer(BaseHTTPRequestHandler):
           # seek start position
           startSecond = self.readNextSecondFromFile(f)
           f.seek(0) 
-          self.gotoPositionWithTime(f, os.path.getsize(absoluteLogFileName), startSecond + offsetInSeconds)
+          self.gotoPositionWithTime(f, os.path.getsize(absoluteLogFileName), startSecond + offsetInSeconds, frequency)
           while True:
             linestring = f.readline()
             # in case the file ended before the request
@@ -79,6 +79,11 @@ class InfraWebServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "image/jpg")
         self.end_headers()
         parameters = parse_qs(self.path[self.path.find('?')+1:]) 
+        geophon_frequency = int(parameters.get("geophonFrequency", [str(self.geophonFrequency)])[0])
+        scale_mode = parameters.get("scaleMode", ["linear"])[0]
+        source_transform_factor = float(parameters.get("sourceTransformFactor", ["1.2"])[0])
+        clip_min = float(parameters.get("clipMin", ["0"])[0])
+        clip_max = float(parameters.get("clipMax", ["60"])[0])
         # self.wfile.write(bytes(str(parameters), "utf-8"))
         currentLogFileName = None
         with open(dataFolder + "lock", "r") as lockfile:
@@ -87,18 +92,22 @@ class InfraWebServer(BaseHTTPRequestHandler):
         data_values_buffer = self.readDataFromLogFile(currentLogFileName, 
                                                       int(parameters["offsetSeconds"][0]),
                                                       int(parameters["numberSeconds"][0]),
-                                                      self.geophonFrequency)
+                                                      geophon_frequency)
         print("Start:" + str(data_values_buffer[1, 0]))
         print("End:" + str(data_values_buffer[1, data_values_buffer[1].size - 1]))
 
         ft = FrequencyImageGenerator.FrequencyImageGenerator(data_values_buffer[0], 
                                      data_values_buffer[1, 0], 
                                      data_values_buffer[1, data_values_buffer[1].size - 1], 
-                                     self.geophonFrequency, 
+                                     geophon_frequency,
                                      win_size=parameters["windowSize"][0], 
                                      fft_size=parameters["windowSize"][0],
                                      overlap_fac=float(parameters["overlapFactor"][0]))
-        fig = ft.createFrequencyImage()
+        fig = ft.createFrequencyImage(
+          scale_mode=scale_mode,
+          clip_window=(clip_min, clip_max),
+          sensor_scale=source_transform_factor
+        )
         #buf = io.BytesIO()
         #fig.savefig(buf, format='png')
         fig.savefig(self.wfile, format='jpg', dpi=250)
@@ -121,21 +130,46 @@ class InfraWebServer(BaseHTTPRequestHandler):
         self.wfile.write(bytes("""<hr/>
                                <form action="/current" target="_blank">
                                <label for="windowSize">Window Size</label><br>
-                               <select name="windowSize">
-                               <option value="2500" selected>2500</option>
-                               <option value="2000" selected>2500</option>
-                               <option value="1500" selected>2500</option>
-                               <option value="1000" selected>2500</option>
+                               <input type="text" name="windowSize" value="2500" list="windowSizeOptions">
+                               <datalist id="windowSizeOptions">
+                               <option value="2500"></option>
+                               <option value="2000"></option>
+                               <option value="1500"></option>
+                               <option value="1000"></option>
+                               </datalist>
+                               <br>
+                               <label for="geophonFrequency">Geophon Frequency</label><br>
+                               <select name="geophonFrequency">
+                               <option value="100" selected>100</option>
+                               <option value="128">128</option>
                                </select>
                                <br>
                                <label for="overlapFactor">Overlap Factor</label><br>
                                <input type="text" name="overlapFactor" value="0.9">
                                <br> 
                                <label for="numberSeconds">Number of seconds</label><br>
-                               <input type="text" name="numberSeconds" value="300">
+                               <input type="text" name="numberSeconds" value="3600">
                                <br>
                                <label for="offsetSeconds">Offset of seconds</label><br>
-                               <input type="text" name="offsetSeconds" value="300">
+                               <input type="text" name="offsetSeconds" value="0">
+                               <br>
+                               <label for="scaleMode">Scale</label><br>
+                               <select name="scaleMode">
+                               <option value="linear">Linear</option>
+                               <option value="log" selected>Logarithmic</option>
+                               </select>
+                               <br>
+                               <label for="sourceTransformFactor">Source Transformation</label><br>
+                               <select name="sourceTransformFactor">
+                               <option value="1.2" selected>Infrasound source (1.2)</option>
+                               <option value="1.0">No transformation (1.0)</option>
+                               </select>
+                               <br>
+                               <label for="clipMin">Clip Window Min</label><br>
+                               <input type="text" name="clipMin" value="0">
+                               <br>
+                               <label for="clipMax">Clip Window Max</label><br>
+                               <input type="text" name="clipMax" value="60">
                                <br>
                                <input type="submit" value="Submit">
                                </form>

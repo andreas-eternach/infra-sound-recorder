@@ -33,7 +33,7 @@ class FrequencyImageGenerator(object):
         self.t_max = len(self.data) / np.float32(self.fs)
 
     # 0 db = 0.00002 Pa 0.02, 1
-    def stft(self, scale='lin', ref= 0.02, clip=None):
+    def stft(self, scale='lin', ref= 0.02, clip=None, sensor_scale=1.0):
         """Perform the STFT and return the result"""
 
         # Todo: changing the overlap factor doens't seem to preserve energy, need to fix this
@@ -54,6 +54,10 @@ class FrequencyImageGenerator(object):
             autopower = np.abs(np.divide(spectrum, self.win_size / 4))
             
             result[i, :] = autopower[: self.fft_size]
+
+        # Mirror create-image behavior: apply sensor-specific transform only for log scale.
+        if scale == 'log' and sensor_scale != 1.0:
+            result = np.divide(result, sensor_scale)
 
         # print("Maximum in first sample: " + str(np.max(result[0])))
         if scale == 'log':
@@ -130,8 +134,9 @@ class FrequencyImageGenerator(object):
         endTime = datetime.datetime.fromtimestamp(self.endTimeAsEpoch / 1000)
         return str(startTime.strftime('%d.%m.%Y %H:%M:%S')) + "(unten)-" + str(endTime.strftime('%H:%M:%S') + "(oben)")
 
-    def createFrequencyImage(self):
-        result = self.stft(clip=(0, 60))
+    def createFrequencyImage(self, scale_mode='linear', clip_window=(0, 60), sensor_scale=1.0):
+        stft_scale = 'log' if scale_mode == 'log' else 'lin'
+        result = self.stft(scale=stft_scale, clip=clip_window, sensor_scale=sensor_scale)
         x_ticks, x_tick_labels = self.create_ticks_optimum(self.freq_axis(), 30, 5)
 
         fig = Figure()
